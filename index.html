@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GTC 2025 Pulse Survey Results</title>
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&f[]=erode@400,500,600,700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+  :root {
+    --brand: #f4c449;
+    --dark: #1c1c1c;
+    --grey-light: #f7f7f7;
+    --grey-med: #e0e0e0;
+    --grey-dark: #606060;
+    --grey-deep: #a4a4a4;
+    --white: #ffffff;
+    --green: #38a169;
+    --green-bg: #f0fff4;
+    --amber: #d69e2e;
+    --amber-bg: #fffff0;
+    --red: #b20303;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Switzer', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--grey-light);
+    color: var(--dark);
+    line-height: 1.6;
+  }
+  h1,h2,h3,h4 { font-family: 'Erode', Georgia, serif; }
+
+  .header {
+    background: var(--brand);
+    color: var(--dark);
+    padding: 1.5rem 1.5rem 1.15rem;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: .15rem; }
+  .header p { opacity: .7; font-size: .85rem; }
+
+  .nav {
+    background: var(--white);
+    border-bottom: 1px solid var(--grey-med);
+    padding: .5rem 1rem;
+    display: flex; gap: .5rem;
+    overflow-x: auto;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: var(--shadow);
+  }
+  .nav button {
+    padding: .5rem 1rem; border: none; background: transparent;
+    color: var(--grey-dark); font-family: 'Switzer', sans-serif;
+    font-size: .85rem; font-weight: 500; border-radius: 6px;
+    cursor: pointer; white-space: nowrap; transition: all .15s;
+  }
+  .nav button:hover { background: var(--grey-light); color: var(--dark); }
+  .nav button.active { background: var(--dark); color: var(--white); }
+
+  .container { max-width: 1440px; margin: 0 auto; padding: 1.25rem 2rem; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .section-intro {
+    font-size: .9rem;
+    color: var(--grey-dark);
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+    max-width: 800px;
+  }
+  .subsection-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dark);
+    margin: 2rem 0 .85rem;
+    padding-bottom: .4rem;
+    border-bottom: 2px solid var(--grey-med);
+  }
+  .subsection-title:first-of-type,
+  .section-intro + .subsection-title,
+  .kpi-row + .subsection-title,
+  .insight-box + .subsection-title {
+    margin-top: .5rem;
+  }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .kpi-card {
+    background: var(--white); border-radius: var(--radius);
+    padding: 1.1rem; box-shadow: var(--shadow); text-align: center;
+  }
+  .kpi-card .kpi-value { font-family: 'Erode', Georgia, serif; font-size: 1.85rem; font-weight: 700; color: var(--dark); }
+  .kpi-card .kpi-label { font-size: .75rem; color: var(--grey-dark); margin-top: .2rem; text-transform: uppercase; letter-spacing: .5px; }
+  .kpi-card.highlight .kpi-value { color: var(--green); }
+
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    margin-bottom: .75rem;
+  }
+  .chart-card {
+    background: var(--white); border-radius: var(--radius);
+    padding: 1.25rem; box-shadow: var(--shadow);
+  }
+  .chart-card h3 { font-size: .9rem; font-weight: 600; margin-bottom: .75rem; color: var(--dark); }
+  .chart-card canvas { width: 100% !important; }
+  .chart-card.full-width { grid-column: 1 / -1; }
+
+  .table-card {
+    background: var(--white); border-radius: var(--radius);
+    padding: 1.25rem; box-shadow: var(--shadow); margin-bottom: 1.25rem; overflow-x: auto;
+  }
+  .table-card h3 { font-size: .9rem; font-weight: 600; margin-bottom: .75rem; color: var(--dark); }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th { text-align: left; padding: .6rem .75rem; border-bottom: 2px solid var(--dark); color: var(--dark); font-weight: 600; white-space: nowrap; }
+  td { padding: .5rem .75rem; border-bottom: 1px solid var(--grey-med); }
+  tr:hover td { background: var(--grey-light); }
+
+  .rec-gauge { display: flex; align-items: center; justify-content: center; gap: 2rem; padding: 1rem 0; }
+  .rec-avg { text-align: center; }
+  .rec-avg .score { font-family: 'Erode', Georgia, serif; font-size: 3rem; font-weight: 700; }
+  .rec-avg .label { font-size: .8rem; color: var(--grey-dark); text-transform: uppercase; }
+  .rec-breakdown { display: flex; gap: .75rem; font-size: .8rem; }
+  .rec-segment { text-align: center; padding: .5rem .75rem; border-radius: 8px; }
+  .rec-segment.high { background: var(--green-bg); color: var(--green); }
+  .rec-segment.mid { background: var(--amber-bg); color: var(--amber); }
+  .rec-segment.low { background: #fff5f5; color: var(--red); }
+  .rec-segment .pct { font-size: 1.25rem; font-weight: 700; display: block; }
+
+  .filter-bar, .explore-bar {
+    background: var(--white); border-radius: var(--radius);
+    padding: .75rem 1rem; margin-bottom: 1.25rem; box-shadow: var(--shadow);
+    display: flex; flex-wrap: wrap; gap: .75rem; align-items: center;
+  }
+  .filter-bar label, .explore-bar label {
+    font-size: .8rem; font-weight: 600; color: var(--grey-dark);
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  .filter-bar select, .explore-bar select {
+    padding: .4rem .75rem; border: 1px solid var(--grey-med); border-radius: 6px;
+    font-size: .85rem; font-family: 'Switzer', sans-serif; background: white; cursor: pointer;
+  }
+  .filter-bar button { padding: .4rem 1rem; border: 1px solid var(--grey-med); border-radius: 6px; background: var(--grey-light); font-family: 'Switzer', sans-serif; font-size: .85rem; cursor: pointer; }
+  .filter-bar button:hover { background: var(--grey-med); }
+
+  .insight-box {
+    background: linear-gradient(135deg, #fefce8, #fef9c3);
+    border-left: 4px solid var(--brand); border-radius: 0 var(--radius) var(--radius) 0;
+    padding: .75rem 1rem; margin-bottom: 1.25rem; font-size: .85rem;
+  }
+  .insight-box strong { color: var(--dark); }
+
+  .explore-card {
+    background: var(--white); border-radius: var(--radius);
+    padding: 1.25rem; box-shadow: var(--shadow); margin-bottom: 1.25rem;
+    border-top: 3px solid var(--brand);
+    margin-top: 1.5rem;
+  }
+  .explore-card h3 { font-size: .95rem; font-weight: 600; margin-bottom: .5rem; color: var(--dark); }
+  .explore-card .explore-desc { font-size: .8rem; color: var(--grey-dark); margin-bottom: .75rem; }
+  .explore-card .explore-bar { box-shadow: none; padding: .5rem 0; margin-bottom: .75rem; background: transparent; }
+  .explore-card canvas { width: 100% !important; }
+  .explore-hint { font-size: .8rem; color: var(--grey-dark); text-align: center; padding: 2rem 0; }
+
+  /* ── Heatmap table styles ── */
+  .heatmap-wrap { overflow-x: auto; margin-top: .5rem; }
+  .heatmap-table {
+    width: 100%; border-collapse: separate; border-spacing: 3px;
+    font-size: .8rem; font-family: 'Switzer', sans-serif;
+  }
+  .heatmap-table th {
+    font-size: .72rem; font-weight: 600; color: var(--grey-dark);
+    padding: .45rem .55rem; text-align: center; white-space: nowrap;
+    background: transparent;
+    border: none;
+  }
+  .heatmap-table th.row-header {
+    text-align: left; min-width: 90px;
+  }
+  .heatmap-table td {
+    padding: .5rem .55rem; text-align: center; font-weight: 600;
+    font-size: .82rem; border-radius: 6px;
+    transition: transform .12s, box-shadow .12s;
+    border: none;
+    cursor: default;
+  }
+  .heatmap-table td:hover {
+    transform: scale(1.08);
+    box-shadow: 0 2px 10px rgba(0,0,0,.18);
+    position: relative; z-index: 1;
+  }
+  .heatmap-table td.row-label {
+    text-align: left; font-weight: 600; color: var(--dark);
+    background: transparent !important; border-radius: 0;
+  }
+  .heatmap-table td.row-label:hover { transform: none; box-shadow: none; }
+  .heatmap-legend {
+    display: flex; align-items: center; gap: .5rem;
+    margin-top: .75rem; font-size: .72rem; color: var(--grey-dark);
+    justify-content: flex-end;
+  }
+  .heatmap-legend-bar {
+    width: 100px; height: 10px; border-radius: 5px;
+  }
+  .heatmap-n { font-weight: 400; font-size: .68rem; display: block; margin-top: 1px; opacity: .7; }
+
+  .footer { text-align: center; padding: 1.25rem; color: var(--grey-dark); font-size: .8rem; }
+
+  /* ── Password gate ── */
+  .gate-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--grey-light);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .gate-overlay.hidden { display: none; }
+  .gate-box {
+    background: var(--white); border-radius: var(--radius);
+    box-shadow: 0 4px 24px rgba(0,0,0,.1);
+    padding: 2.5rem 2rem; text-align: center;
+    max-width: 380px; width: 90%;
+  }
+  .gate-box .gate-brand {
+    display: inline-block; background: var(--brand);
+    padding: .45rem 1.2rem; border-radius: 6px;
+    font-family: 'Erode', Georgia, serif; font-weight: 700; font-size: 1.1rem;
+    margin-bottom: 1.25rem; color: var(--dark);
+  }
+  .gate-box p { font-size: .85rem; color: var(--grey-dark); margin-bottom: 1.25rem; }
+  .gate-box input {
+    width: 100%; padding: .65rem .85rem; border: 1px solid var(--grey-med);
+    border-radius: 6px; font-size: .95rem; font-family: 'Switzer', sans-serif;
+    text-align: center; outline: none; transition: border-color .15s;
+  }
+  .gate-box input:focus { border-color: var(--brand); }
+  .gate-box button {
+    margin-top: .75rem; width: 100%; padding: .65rem;
+    background: var(--dark); color: var(--white); border: none;
+    border-radius: 6px; font-size: .9rem; font-family: 'Switzer', sans-serif;
+    font-weight: 600; cursor: pointer; transition: opacity .15s;
+  }
+  .gate-box button:hover { opacity: .85; }
+  .gate-error { color: var(--red); font-size: .8rem; margin-top: .5rem; min-height: 1.2em; }
+  .app-hidden { visibility: hidden; }
+
+  @media (max-width: 900px) {
+    .chart-grid { grid-template-columns: 1fr; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .header h1 { font-size: 1.2rem; }
+    .rec-gauge { flex-direction: column; gap: 1rem; }
+    .container { padding: .75rem; }
+    .heatmap-table { font-size: .72rem; }
+    .heatmap-table td { padding: .4rem .35rem; }
+  }
+
+  @media print {
+    .nav { display: none !important; }
+    .section { display: block !important; page-break-before: always; }
+    .section:first-child { page-break-before: avoid; }
+    .chart-card, .explore-card { break-inside: avoid; }
+    body { background: white; }
+    .container { padding: .5rem; }
+    .header { padding: .75rem; }
+  }
+</style>
+</head>
+<body>
+<div class="gate-overlay" id="gate">
+  <div class="gate-box">
+    <div class="gate-brand">Grace Toronto Church</div>
+    <p>Enter the password to view the 2025 Pulse Survey results.</p>
+    <input type="password" id="gate-pw" placeholder="Password" autocomplete="off">
+    <button id="gate-btn">View Results</button>
+    <div class="gate-error" id="gate-err"></div>
+  </div>
+</div>
+<div id="app-wrap" class="app-hidden">
+<div class="header">
+  <h1>Grace Toronto Church</h1>
+  <p>2025 Annual Pulse Survey Results</p>
+</div>
+<nav class="nav" id="nav">
+  <button class="active" data-section="overview">Overview</button>
+  <button data-section="demographics">Demographics</button>
+  <button data-section="engagement">Engagement</button>
+  <button data-section="programs">Programs & Ministry</button>
+  <button data-section="satisfaction">Satisfaction</button>
+  <button data-section="operations">Operations</button>
+  <button data-section="explore">Explore Data</button>
+</nav>
+<div class="container" id="app">
+
+  <!-- ════════════════════ OVERVIEW ════════════════════ -->
+  <div class="section active" id="sec-overview">
+    <div class="kpi-row" id="kpi-overview"></div>
+    <div class="insight-box" id="insight-overview"></div>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Service Attendance</h3><canvas id="chart-service"></canvas></div>
+      <div class="chart-card"><h3>Tenure at Grace Toronto</h3><canvas id="chart-tenure"></canvas></div>
+      <div class="chart-card"><h3>Age Distribution</h3><canvas id="chart-age"></canvas></div>
+      <div class="chart-card"><h3>Likelihood to Recommend</h3><canvas id="chart-rec-overview"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ DEMOGRAPHICS ════════════════════ -->
+  <div class="section" id="sec-demographics">
+    <p class="section-intro">A snapshot of who makes up the Grace Toronto congregation &mdash; backgrounds, identities, and lived experiences.</p>
+
+    <h2 class="subsection-title">Identity</h2>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Gender</h3><canvas id="chart-gender"></canvas></div>
+      <div class="chart-card"><h3>Age Group</h3><canvas id="chart-age-demo"></canvas></div>
+      <div class="chart-card"><h3>Ethnicity</h3><canvas id="chart-ethnicity"></canvas></div>
+      <div class="chart-card"><h3>Marital Status</h3><canvas id="chart-marital"></canvas></div>
+    </div>
+
+    <h2 class="subsection-title">Location & Background</h2>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Years in Toronto</h3><canvas id="chart-years-toronto"></canvas></div>
+      <div class="chart-card"><h3>Education Level</h3><canvas id="chart-education"></canvas></div>
+      <div class="chart-card full-width"><h3>Languages Spoken</h3><canvas id="chart-languages"></canvas></div>
+    </div>
+
+    <h2 class="subsection-title">Professional & Financial</h2>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Employment Status</h3><canvas id="chart-employment"></canvas></div>
+      <div class="chart-card"><h3>Industry</h3><canvas id="chart-industry"></canvas></div>
+      <div class="chart-card full-width"><h3>Income Distribution</h3><canvas id="chart-income"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ ENGAGEMENT ════════════════════ -->
+  <div class="section" id="sec-engagement">
+    <div class="kpi-row" id="kpi-engagement"></div>
+
+    <h2 class="subsection-title">Spiritual Practices</h2>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Prayer Frequency</h3><canvas id="chart-prayer"></canvas></div>
+      <div class="chart-card"><h3>Bible Reading Frequency</h3><canvas id="chart-bible"></canvas></div>
+      <div class="chart-card full-width"><h3>Faith Description</h3><canvas id="chart-faith"></canvas></div>
+    </div>
+
+    <h2 class="subsection-title">Church Connection</h2>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Baptism Status</h3><canvas id="chart-baptized"></canvas></div>
+      <div class="chart-card"><h3>Home Church</h3><canvas id="chart-home"></canvas></div>
+      <div class="chart-card"><h3>Inducted Member</h3><canvas id="chart-member"></canvas></div>
+    </div>
+
+    <h2 class="subsection-title">Growth</h2>
+    <div class="chart-grid">
+      <div class="chart-card full-width"><h3>Faith Growth Goals</h3><canvas id="chart-growth"></canvas></div>
+    </div>
+
+    <div class="explore-card">
+      <h3>Deep Dive: Spiritual Life by Demographic</h3>
+      <p class="explore-desc">For prayer and bible reading, shows average frequency score (1 = Rarely &hellip; 4 = Daily) per group. For faith description, shows the percentage composition within each group.</p>
+      <div class="explore-bar">
+        <label>Show</label>
+        <select id="eng-metric">
+          <option value="prayer_frequency">Prayer Frequency</option>
+          <option value="bible_reading_frequency">Bible Reading Frequency</option>
+          <option value="faith_description">Faith Description</option>
+        </select>
+        <label>compared by</label>
+        <select id="eng-dimension">
+          <option value="age_group">Age Group</option>
+          <option value="gender">Gender</option>
+          <option value="service">Service</option>
+          <option value="attendance_length">Tenure</option>
+        </select>
+      </div>
+      <canvas id="chart-eng-explore"></canvas>
+    </div>
+  </div>
+
+  <!-- ════════════════════ PROGRAMS & MINISTRY ════════════════════ -->
+  <div class="section" id="sec-programs">
+    <p class="section-intro">Which ministries people participate in, which programs they find most valuable, and what they would like to see more of.</p>
+    <div class="insight-box" id="insight-programs"></div>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Ministries Participated In (Past Year)</h3><canvas id="chart-ministries"></canvas></div>
+      <div class="chart-card"><h3>Beneficial Programs (Free-Text)</h3><canvas id="chart-beneficial"></canvas></div>
+      <div class="chart-card"><h3>Desired Future Programs</h3><canvas id="chart-future"></canvas></div>
+      <div class="chart-card"><h3>What Excites People About GTC</h3><canvas id="chart-excites"></canvas></div>
+    </div>
+    <div class="explore-card">
+      <h3>Deep Dive: Who Participates in Each Ministry?</h3>
+      <p class="explore-desc">Heatmap showing participation counts across demographic groups. Darker cells indicate higher participation.</p>
+      <div class="explore-bar">
+        <label>Break down by</label>
+        <select id="prog-dimension">
+          <option value="age_group">Age Group</option>
+          <option value="gender">Gender</option>
+          <option value="service">Service</option>
+          <option value="attendance_length">Tenure</option>
+        </select>
+      </div>
+      <div id="prog-explore-container"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ SATISFACTION ════════════════════ -->
+  <div class="section" id="sec-satisfaction">
+    <p class="section-intro">How likely members are to recommend Grace Toronto, both to fellow Christians and to non-Christians.</p>
+    <div class="chart-card" style="margin-bottom:1.25rem">
+      <h3>Likelihood to Recommend Grace Toronto</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+        <div>
+          <h4 style="text-align:center;color:var(--grey-dark);font-size:.8rem;margin-bottom:.25rem">To a Fellow Christian</h4>
+          <div class="rec-gauge" id="rec-christian"></div>
+        </div>
+        <div>
+          <h4 style="text-align:center;color:var(--grey-dark);font-size:.8rem;margin-bottom:.25rem">To a Non-Christian</h4>
+          <div class="rec-gauge" id="rec-non-christian"></div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Score Distribution &mdash; To a Christian</h3><canvas id="chart-rec-dist-c"></canvas></div>
+      <div class="chart-card"><h3>Score Distribution &mdash; To a Non-Christian</h3><canvas id="chart-rec-dist-nc"></canvas></div>
+    </div>
+    <div class="explore-card">
+      <h3>Deep Dive: Recommendation Score by Demographic</h3>
+      <p class="explore-desc">Average recommendation score (out of 10) for each demographic group, with sample size shown on hover.</p>
+      <div class="explore-bar">
+        <label>Score type</label>
+        <select id="sat-metric">
+          <option value="nps_christian">Recommend to a Christian</option>
+          <option value="nps_non_christian">Recommend to a Non-Christian</option>
+        </select>
+        <label>compared by</label>
+        <select id="sat-dimension">
+          <option value="age_group">Age Group</option>
+          <option value="attendance_length">Tenure</option>
+          <option value="service">Service</option>
+          <option value="gender">Gender</option>
+          <option value="ethnicity">Ethnicity</option>
+        </select>
+      </div>
+      <canvas id="chart-sat-explore"></canvas>
+    </div>
+  </div>
+
+  <!-- ════════════════════ OPERATIONS ════════════════════ -->
+  <div class="section" id="sec-operations">
+    <p class="section-intro">How people get to church, when they're available for activities, and how they prefer to stay informed.</p>
+
+    <h2 class="subsection-title">Communication & Scheduling</h2>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Availability for Church Activities (1&ndash;5)</h3><canvas id="chart-avail"></canvas></div>
+      <div class="chart-card"><h3>Communication Preference (1&ndash;5)</h3><canvas id="chart-comms"></canvas></div>
+    </div>
+
+    <h2 class="subsection-title">Getting Here</h2>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Commute Method</h3><canvas id="chart-commute-method"></canvas></div>
+      <div class="chart-card"><h3>Commute Length</h3><canvas id="chart-commute-length"></canvas></div>
+    </div>
+
+    <h2 class="subsection-title">Discovery & Family</h2>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>How People First Heard About GTC</h3><canvas id="chart-heard"></canvas></div>
+      <div class="chart-card"><h3>Children at GTC</h3><canvas id="chart-children"></canvas></div>
+    </div>
+
+    <div class="explore-card">
+      <h3>Deep Dive: Communication & Availability by Demographic</h3>
+      <p class="explore-desc">Heatmap of average scores (1&ndash;5) across demographic groups. Darker cells indicate stronger preference or higher availability.</p>
+      <div class="explore-bar">
+        <label>Show</label>
+        <select id="ops-metric">
+          <option value="comms">Communication Preference</option>
+          <option value="avail">Availability</option>
+        </select>
+        <label>compared by</label>
+        <select id="ops-dimension">
+          <option value="age_group">Age Group</option>
+          <option value="gender">Gender</option>
+          <option value="attendance_length">Tenure</option>
+        </select>
+      </div>
+      <div id="ops-explore-container"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ EXPLORE DATA ════════════════════ -->
+  <div class="section" id="sec-explore">
+    <p class="section-intro">Filter and browse individual survey responses. Use the dropdowns to narrow by service, age, gender, or tenure.</p>
+    <div class="filter-bar">
+      <label>Filter by:</label>
+      <select id="filter-service"><option value="">All Services</option></select>
+      <select id="filter-age"><option value="">All Ages</option></select>
+      <select id="filter-gender"><option value="">All Genders</option></select>
+      <select id="filter-tenure"><option value="">All Tenures</option></select>
+      <button onclick="resetFilters()">Reset Filters</button>
+      <span id="filter-count" style="margin-left:auto;font-size:.85rem;color:var(--grey-dark)"></span>
+    </div>
+    <div class="table-card">
+      <h3>Response Data</h3>
+      <table id="data-table"><thead><tr id="data-thead"></tr></thead><tbody id="data-tbody"></tbody></table>
+    </div>
+  </div>
+
+</div>
+<div class="footer">Grace Toronto Church &middot; 2025 Pulse Survey &middot; <span id="resp-count"></span> responses</div>
+</div><!-- /app-wrap -->
+
+<script>
+// ── Password gate ──
+const PASS_HASH = '214137c579254ed13e09e4b32d2fef7913a60c1cc6d46b8e8d3eb9455fe03dcc';
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function unlockApp() {
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app-wrap').classList.remove('app-hidden');
+  sessionStorage.setItem('gtc_authed', '1');
+}
+if (sessionStorage.getItem('gtc_authed') === '1') { unlockApp(); }
+document.getElementById('gate-btn').addEventListener('click', async () => {
+  const pw = document.getElementById('gate-pw').value;
+  if (!pw) return;
+  const hash = await sha256(pw);
+  if (hash === PASS_HASH) { unlockApp(); }
+  else { document.getElementById('gate-err').textContent = 'Incorrect password.'; }
+});
+document.getElementById('gate-pw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('gate-btn').click();
+});
+
+Chart.register(ChartDataLabels);
+Chart.defaults.set('plugins.datalabels', { display: false });
+
+let DATA = null;
+const explorerCharts = {};
+
+const CAT = [
+  '#2b7a78','#d4a843','#c06c84','#5b7fa5','#6b9e6b',
+  '#c4724e','#8e7cb8','#3d8b8b','#8d8778','#8b5e83',
+  '#7ea87e','#d98880','#5a9e8f','#b07d4f','#7189a8',
+];
+function hexToRgb(h){const n=parseInt(h.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255]}
+function rgbToHex([r,g,b]){return'#'+[r,g,b].map(c=>Math.round(c).toString(16).padStart(2,'0')).join('')}
+function gradient(a,b,s){if(s<=1)return[a];const c=hexToRgb(a),d=hexToRgb(b);return Array.from({length:s},(_,i)=>{const t=i/(s-1);return rgbToHex(c.map((v,j)=>v+(d[j]-v)*t))})}
+const GRAD_TEAL=(n)=>gradient('#a8dbd9','#145a5a',n);
+const GRAD_GOLD=(n)=>gradient('#f9e5a0','#8b6914',n);
+const GRAD_BLUE=(n)=>gradient('#a7c4e0','#1e3a5f',n);
+const GRAD_GREEN=(n)=>gradient('#a3d9a5','#1b6e2d',n);
+const GRAD_SLATE=(n)=>gradient('#b3c2d1','#2e4a62',n);
+
+const ORDERED_TENURE=['0-6 months','6-12 months','1-2 years','2-3 years','3-4 years','4-5 years','More than 5 years'];
+const ORDERED_AGE=['18-25','26-35','36-45','46-55','56-65','65 & above'];
+const ORDERED_PRAYER=['Rarely','A couple times a month','A couple times a week','Daily'];
+const ORDERED_COMMUTE=['15min or less','15min to 30min','30min to 45min','45min to 60min','More than 60min'];
+const ORDERED_INCOME=['Under $25,000','$25,000 to $50,000','$50,000 to $75,000','$75,000 to $100,000','$100,000 to $150,000','$150,000 to $200,000','Above $200,000'];
+const ORDERED_TORONTO=['Less than 1 year','1-5years','6-10 years','10-20 years','More than 20 years'];
+const KNOWN_HEARD=['Friend or Family','Google Search','Social Media','Lived nearby','Event'];
+
+const DIM_ORDER = {
+  age_group: ORDERED_AGE,
+  attendance_length: ORDERED_TENURE,
+};
+
+const ORDINAL_MAP = {
+  'Rarely': 1,
+  'A couple times a month': 2,
+  'A couple times a week': 3,
+  'Daily': 4,
+};
+
+function sortByOrder(d,o){const l=[],v=[];for(const k of o)if(d[k]!==undefined){l.push(k);v.push(d[k])}for(const k of Object.keys(d))if(!o.includes(k)){l.push(k);v.push(d[k])}return{labels:l,values:v}}
+function sortByValue(d){const e=Object.entries(d).sort((a,b)=>b[1]-a[1]);return{labels:e.map(x=>x[0]),values:e.map(x=>x[1])}}
+function groupSmallCategories(d,k,l='Other'){const g={};let o=0;for(const[a,b]of Object.entries(d)){if(k.includes(a))g[a]=b;else o+=b}if(o>0)g[l]=o;return g}
+function pctLabel(v,t){return Math.round(v/t*100)+'%'}
+
+function makeChart(id,type,labels,datasets,opts={}){
+  const ctx=document.getElementById(id);if(!ctx)return null;
+  let ar=opts.aspectRatio;
+  if(!ar){if(type==='doughnut'||type==='pie')ar=1.4;else if(opts.indexAxis==='y')ar=Math.max(1.0,2.8-labels.length*0.1);else ar=1.8}
+  const total=datasets[0]?.data?.reduce((s,v)=>s+v,0)||1;
+  const isPct=opts.showPct!==false&&type==='bar'&&!opts.isAverage&&datasets.length===1;
+  return new Chart(ctx,{type,data:{labels,datasets},options:{
+    responsive:true,maintainAspectRatio:true,aspectRatio:ar,
+    plugins:{
+      legend:{display:opts.showLegend===true,position:opts.legendPos||'top',labels:{font:{size:11,family:'Switzer'},padding:10,boxWidth:12}},
+      tooltip:{backgroundColor:'#1c1c1c',titleFont:{family:'Switzer'},bodyFont:{family:'Switzer'},cornerRadius:8,padding:10,
+        callbacks:isPct?{label:c=>{const v=c.parsed[opts.indexAxis==='y'?'x':'y'];return`${v} responses (${pctLabel(v,total)})`}}:opts.tooltipCallbacks||{}},
+      datalabels:isPct?{display:c=>{const v=c.dataset.data[c.dataIndex];return v/total>=0.02},anchor:'end',align:opts.indexAxis==='y'?'right':'top',offset:2,
+        font:{size:10,weight:500,family:'Switzer'},color:'#606060',formatter:v=>pctLabel(v,total)}:{display:false},
+    },
+    scales:type==='bar'||type==='line'?{
+      x:{grid:{display:false},ticks:{font:{size:10,family:'Switzer'},maxRotation:45},stacked:opts.stacked||false},
+      y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{size:10,family:'Switzer'}},stacked:opts.stacked||false}
+    }:undefined,
+    indexAxis:opts.indexAxis||'x',...opts.extra,
+  }});
+}
+function makeHBar(id,d,order,color,opts={}){
+  const{labels,values}=order?sortByOrder(d,order):sortByValue(d);
+  const n=labels.length;
+  const r=opts.aspectRatio||(n<=2?4:n<=3?3:n<=4?2.5:n<=6?2:n<=9?1.5:n<=14?1.3:1.1);
+  const bg=typeof color==='function'?color(n):(color||CAT[0]);
+  return makeChart(id,'bar',labels,[{data:values,backgroundColor:bg,borderRadius:4,maxBarThickness:28}],{indexAxis:'y',aspectRatio:r,...opts});
+}
+function makeVBar(id,d,order,color,opts={}){
+  const{labels,values}=order?sortByOrder(d,order):sortByValue(d);
+  const bg=typeof color==='function'?color(labels.length):(color||CAT[0]);
+  return makeChart(id,'bar',labels,[{data:values,backgroundColor:bg,borderRadius:4,maxBarThickness:48}],{aspectRatio:opts.aspectRatio||1.8,...opts});
+}
+
+// ── Cross-tab engine ──
+function getDimValues(dimField) {
+  const order = DIM_ORDER[dimField];
+  const vals = new Set();
+  DATA.records.forEach(r => { if (r[dimField]) vals.add(r[dimField]); });
+  if (order) return order.filter(v => vals.has(v));
+  return [...vals].sort((a, b) => {
+    const ca = DATA.records.filter(r => r[dimField] === a).length;
+    const cb = DATA.records.filter(r => r[dimField] === b).length;
+    return cb - ca;
+  });
+}
+
+function crossTabCount(metricField, dimField, topN = 8) {
+  const dimVals = getDimValues(dimField);
+  const counter = {};
+  DATA.records.forEach(r => {
+    const dv = r[dimField]; if (!dv) return;
+    const mv = r[metricField];
+    const items = Array.isArray(mv) ? mv : (mv ? [mv] : []);
+    items.forEach(item => {
+      if (!counter[item]) counter[item] = {};
+      counter[item][dv] = (counter[item][dv] || 0) + 1;
+    });
+  });
+  const sorted = Object.entries(counter).sort((a, b) => {
+    const ta = Object.values(a[1]).reduce((s, v) => s + v, 0);
+    const tb = Object.values(b[1]).reduce((s, v) => s + v, 0);
+    return tb - ta;
+  }).slice(0, topN);
+  const labels = sorted.map(e => e[0].length > 35 ? e[0].substring(0, 32) + '...' : e[0]);
+  const fullLabels = sorted.map(e => e[0]);
+  const datasets = dimVals.map((dv, i) => ({
+    label: dv,
+    data: sorted.map(([, counts]) => counts[dv] || 0),
+    backgroundColor: CAT[i % CAT.length],
+    borderRadius: 3, maxBarThickness: 18,
+  }));
+  return { labels, fullLabels, datasets, dimVals };
+}
+
+function crossTabAvg(numericField, dimField) {
+  const dimVals = getDimValues(dimField);
+  const sums = {}, counts = {};
+  dimVals.forEach(dv => { sums[dv] = 0; counts[dv] = 0; });
+  DATA.records.forEach(r => {
+    const dv = r[dimField]; if (!dv || !dimVals.includes(dv)) return;
+    const v = r[numericField]; if (v == null) return;
+    sums[dv] += v; counts[dv]++;
+  });
+  const labels = dimVals;
+  const values = dimVals.map(dv => counts[dv] ? +(sums[dv] / counts[dv]).toFixed(2) : 0);
+  const bg = GRAD_TEAL(labels.length);
+  return { labels, datasets: [{ data: values, backgroundColor: bg, borderRadius: 4, maxBarThickness: 48 }], counts: dimVals.map(dv => counts[dv]) };
+}
+
+function crossTabMultiAvg(numericKeys, numericLabels, dimField) {
+  const dimVals = getDimValues(dimField);
+  const matrix = numericKeys.map(key =>
+    dimVals.map(dv => {
+      const recs = DATA.records.filter(r => r[dimField] === dv && r[key] != null);
+      return recs.length ? +(recs.reduce((s, r) => s + r[key], 0) / recs.length).toFixed(2) : 0;
+    })
+  );
+  const counts = dimVals.map(dv => DATA.records.filter(r => r[dimField] === dv).length);
+  const datasets = dimVals.map((dv, i) => ({
+    label: dv,
+    data: numericKeys.map((_, ki) => matrix[ki][i]),
+    backgroundColor: CAT[i % CAT.length],
+    borderRadius: 3, maxBarThickness: 18,
+  }));
+  return { labels: numericLabels, datasets, matrix, counts };
+}
+
+// ── Heatmap renderer ──
+function heatmapColor(t, palette) {
+  palette = palette || 'teal';
+  const palettes = {
+    teal:  { r: [235,20],  g: [245,90],  b: [243,90]  },
+    gold:  { r: [254,139], g: [248,105], b: [231,20]  },
+    blue:  { r: [232,30],  g: [240,58],  b: [248,95]  },
+    green: { r: [232,27],  g: [248,110], b: [233,45]  },
+  };
+  const p = palettes[palette] || palettes.teal;
+  const r = Math.round(p.r[0] + (p.r[1] - p.r[0]) * t);
+  const g = Math.round(p.g[0] + (p.g[1] - p.g[0]) * t);
+  const b = Math.round(p.b[0] + (p.b[1] - p.b[0]) * t);
+  return `rgb(${r},${g},${b})`;
+}
+
+function renderHeatmap(containerId, rowLabels, colLabels, values, config = {}) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const { maxValue, format, palette, colCounts } = config;
+  const fmt = format || (v => v);
+
+  let vMin = Infinity, vMax = -Infinity;
+  values.forEach(row => row.forEach(v => {
+    if (v != null && v !== 0) { vMin = Math.min(vMin, v); vMax = Math.max(vMax, v); }
+  }));
+  if (maxValue) vMax = maxValue;
+  if (vMin === Infinity) vMin = 0;
+  if (vMin === vMax) vMin = 0;
+
+  let html = '<div class="heatmap-wrap"><table class="heatmap-table"><thead><tr><th class="row-header"></th>';
+  colLabels.forEach((col, i) => {
+    const nStr = colCounts ? `<span class="heatmap-n">n=${colCounts[i]}</span>` : '';
+    html += `<th>${col}${nStr}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  rowLabels.forEach((row, i) => {
+    html += `<tr><td class="row-label">${row}</td>`;
+    colLabels.forEach((_, j) => {
+      const v = values[i][j];
+      const t = (v != null && vMax > vMin) ? Math.max(0, Math.min(1, (v - vMin * 0.8) / (vMax - vMin * 0.8))) : 0;
+      const bg = v === 0 ? '#f7f7f7' : heatmapColor(t, palette);
+      const textColor = t > 0.6 ? '#fff' : '#1c1c1c';
+      html += `<td style="background:${bg};color:${textColor}">${v === 0 ? '&mdash;' : fmt(v)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  const gradStart = heatmapColor(0, palette);
+  const gradEnd = heatmapColor(1, palette);
+  html += `<div class="heatmap-legend"><span>Low</span><div class="heatmap-legend-bar" style="background:linear-gradient(to right,${gradStart},${gradEnd})"></div><span>High</span></div>`;
+
+  container.innerHTML = html;
+}
+
+function renderExplorer(canvasId, chartConfig) {
+  if (explorerCharts[canvasId]) { explorerCharts[canvasId].destroy(); }
+  const { labels, datasets, opts } = chartConfig;
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  const nLabels = labels.length;
+  const ar = opts?.aspectRatio || (opts?.indexAxis === 'y' ? Math.max(0.6, 1.8 - nLabels * 0.08) : 1.8);
+  explorerCharts[canvasId] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: true, aspectRatio: ar,
+      indexAxis: opts?.indexAxis || 'x',
+      plugins: {
+        legend: { display: datasets.length > 1, position: 'top', labels: { font: { size: 10, family: 'Switzer' }, padding: 8, boxWidth: 10 } },
+        tooltip: { backgroundColor: '#1c1c1c', titleFont: { family: 'Switzer' }, bodyFont: { family: 'Switzer' }, cornerRadius: 8, padding: 10,
+          callbacks: opts?.tooltipCallbacks || {} },
+        datalabels: opts?.showDatalabels ? {
+          display: c => c.dataset.data[c.dataIndex] > 0,
+          anchor: 'end', align: 'top', offset: 1,
+          font: { size: 9, weight: 500, family: 'Switzer' }, color: '#606060',
+          formatter: opts.datalabelFormatter || (v => v),
+        } : { display: false },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Switzer' }, maxRotation: 45 }, stacked: opts?.stacked || false, ...(opts?.xMax ? { max: opts.xMax } : {}) },
+        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10, family: 'Switzer' } }, stacked: opts?.stacked || false, ...(opts?.yMax ? { max: opts.yMax } : {}) },
+      },
+    },
+  });
+}
+
+// ── Explorer renderers ──
+function renderEngExplorer() {
+  const metric = document.getElementById('eng-metric').value;
+  const dim = document.getElementById('eng-dimension').value;
+
+  if (metric === 'faith_description') {
+    const dimVals = getDimValues(dim);
+    const metricVals = new Set();
+    DATA.records.forEach(r => { if (r[metric]) metricVals.add(r[metric]); });
+    const mVals = [...metricVals].sort((a, b) => {
+      const ca = DATA.records.filter(r => r[metric] === a).length;
+      const cb = DATA.records.filter(r => r[metric] === b).length;
+      return cb - ca;
+    });
+
+    const counts = {};
+    dimVals.forEach(dv => { counts[dv] = {}; });
+    DATA.records.forEach(r => {
+      const dv = r[dim], mv = r[metric];
+      if (!dv || !mv || !dimVals.includes(dv)) return;
+      counts[dv][mv] = (counts[dv][mv] || 0) + 1;
+    });
+
+    const totals = dimVals.map(dv => Object.values(counts[dv]).reduce((s, v) => s + v, 0));
+    const datasets = mVals.map((mv, i) => ({
+      label: mv.length > 30 ? mv.substring(0, 27) + '...' : mv,
+      data: dimVals.map((dv, di) => totals[di] ? Math.round((counts[dv][mv] || 0) / totals[di] * 100) : 0),
+      backgroundColor: CAT[i % CAT.length],
+      borderRadius: 2, maxBarThickness: 48,
+    }));
+
+    renderExplorer('chart-eng-explore', {
+      labels: dimVals, datasets,
+      opts: {
+        stacked: true, yMax: 100,
+        tooltipCallbacks: { label: c => `${c.dataset.label}: ${c.parsed.y}%` },
+      },
+    });
+  } else {
+    const dimVals = getDimValues(dim);
+    const results = dimVals.map(dv => {
+      const recs = DATA.records.filter(r => r[dim] === dv && r[metric] && ORDINAL_MAP[r[metric]] != null);
+      if (!recs.length) return { avg: 0, n: 0 };
+      const sum = recs.reduce((s, r) => s + ORDINAL_MAP[r[metric]], 0);
+      return { avg: +(sum / recs.length).toFixed(2), n: recs.length };
+    });
+
+    const scaleLabels = ['', '1: Rarely', '2: Few times/mo', '3: Few times/wk', '4: Daily'];
+    renderExplorer('chart-eng-explore', {
+      labels: dimVals,
+      datasets: [{
+        data: results.map(r => r.avg),
+        backgroundColor: GRAD_TEAL(dimVals.length),
+        borderRadius: 4, maxBarThickness: 48,
+      }],
+      opts: {
+        yMax: 4,
+        showDatalabels: true,
+        datalabelFormatter: v => v.toFixed(1),
+        tooltipCallbacks: {
+          label: (c) => {
+            const r = results[c.dataIndex];
+            return `Avg: ${r.avg.toFixed(2)} / 4  (n=${r.n})`;
+          },
+          afterLabel: () => {
+            return scaleLabels.filter(s => s).join('\n');
+          },
+        },
+      },
+    });
+  }
+}
+
+function renderProgExplorer() {
+  const dim = document.getElementById('prog-dimension').value;
+  const dimVals = getDimValues(dim);
+
+  const counter = {};
+  DATA.records.forEach(r => {
+    const dv = r[dim]; if (!dv) return;
+    const items = r.ministries_participated || [];
+    items.forEach(item => {
+      if (!counter[item]) counter[item] = {};
+      counter[item][dv] = (counter[item][dv] || 0) + 1;
+    });
+  });
+
+  const sorted = Object.entries(counter)
+    .sort((a, b) => Object.values(b[1]).reduce((s,v)=>s+v,0) - Object.values(a[1]).reduce((s,v)=>s+v,0))
+    .slice(0, 10);
+  const rowLabels = sorted.map(([k]) => k.length > 30 ? k.substring(0, 27) + '...' : k);
+  const colCounts = dimVals.map(dv => DATA.records.filter(r => r[dim] === dv).length);
+  const values = sorted.map(([, counts]) => dimVals.map(dv => counts[dv] || 0));
+
+  renderHeatmap('prog-explore-container', rowLabels, dimVals, values, {
+    palette: 'teal',
+    colCounts,
+    format: v => v,
+  });
+}
+
+function renderSatExplorer() {
+  const metric = document.getElementById('sat-metric').value;
+  const dim = document.getElementById('sat-dimension').value;
+  const { labels, datasets, counts } = crossTabAvg(metric, dim);
+  renderExplorer('chart-sat-explore', { labels, datasets, opts: {
+    yMax: 10,
+    showDatalabels: true,
+    datalabelFormatter: v => v.toFixed(1),
+    tooltipCallbacks: { label: c => `Avg: ${c.parsed.y.toFixed(1)} / 10  (n=${counts[c.dataIndex]})` },
+  }});
+}
+
+function renderOpsExplorer() {
+  const metricType = document.getElementById('ops-metric').value;
+  const dim = document.getElementById('ops-dimension').value;
+  const dimVals = getDimValues(dim);
+
+  const keys = metricType === 'comms'
+    ? ['pref_email', 'pref_verbal_announcements', 'pref_facebook', 'pref_instagram']
+    : ['avail_weekday_evening', 'avail_weekday_morning', 'avail_saturday_morning', 'avail_saturday_evening', 'avail_sunday_before_2nd', 'avail_sunday_after_1st', 'avail_sunday_afternoon'];
+  const rowLabels = metricType === 'comms'
+    ? ['Email', 'Verbal Announcements', 'Facebook', 'Instagram']
+    : ['Weekday Evening', 'Weekday Morning', 'Saturday Morning', 'Saturday Evening', 'Sunday 9\u201311am', 'Sunday 11am\u20131pm', 'Sunday 12:45\u20132pm'];
+
+  const colCounts = dimVals.map(dv => DATA.records.filter(r => r[dim] === dv).length);
+  const values = keys.map(key =>
+    dimVals.map(dv => {
+      const recs = DATA.records.filter(r => r[dim] === dv && r[key] != null);
+      return recs.length ? +(recs.reduce((s, r) => s + r[key], 0) / recs.length).toFixed(1) : 0;
+    })
+  );
+
+  renderHeatmap('ops-explore-container', rowLabels, dimVals, values, {
+    maxValue: 5,
+    palette: metricType === 'comms' ? 'gold' : 'blue',
+    colCounts,
+    format: v => Number(v).toFixed(1),
+  });
+}
+
+// ── Section renderers ──
+function renderRecGauge(id, d) {
+  const el = document.getElementById(id);
+  const vals = Object.entries(d.distribution).map(([k,v]) => [parseInt(k),v]);
+  const total = vals.reduce((s,[,v]) => s+v, 0);
+  const high = vals.filter(([k]) => k>=9).reduce((s,[,v]) => s+v, 0);
+  const mid = vals.filter(([k]) => k>=7&&k<=8).reduce((s,[,v]) => s+v, 0);
+  const low = vals.filter(([k]) => k<=6).reduce((s,[,v]) => s+v, 0);
+  const color = d.mean >= 8.5 ? 'var(--green)' : d.mean >= 7 ? 'var(--amber)' : 'var(--red)';
+  el.innerHTML = `<div class="rec-avg"><div class="score" style="color:${color}">${d.mean}</div><div class="label">Avg. Score (out of 10)</div></div>
+    <div class="rec-breakdown"><div class="rec-segment high"><span class="pct">${Math.round(high/total*100)}%</span>Very Likely<br>(9\u201310)</div>
+    <div class="rec-segment mid"><span class="pct">${Math.round(mid/total*100)}%</span>Likely<br>(7\u20138)</div>
+    <div class="rec-segment low"><span class="pct">${Math.round(low/total*100)}%</span>Less Likely<br>(0\u20136)</div></div>`;
+}
+
+function renderKPIs() {
+  const s=DATA.summary, na=s.numeric_averages, n=DATA.metadata.total_responses;
+  const dp=s.distributions.prayer_frequency['Daily']||0, db=s.distributions.bible_reading_frequency['Daily']||0;
+  const hy=s.distributions.home_church['Yes']||0, my=s.distributions.inducted_member['Yes']||0;
+  document.getElementById('kpi-overview').innerHTML = `
+    <div class="kpi-card"><div class="kpi-value">${n}</div><div class="kpi-label">Total Responses</div></div>
+    <div class="kpi-card highlight"><div class="kpi-value">${na.nps_christian.mean}/10</div><div class="kpi-label">Avg. Recommend (Christian)</div></div>
+    <div class="kpi-card highlight"><div class="kpi-value">${na.nps_non_christian.mean}/10</div><div class="kpi-label">Avg. Recommend (Non-Chr.)</div></div>
+    <div class="kpi-card"><div class="kpi-value">${Math.round(hy/n*100)}%</div><div class="kpi-label">Consider GTC Home</div></div>
+    <div class="kpi-card"><div class="kpi-value">${Math.round(my/n*100)}%</div><div class="kpi-label">Inducted Members</div></div>
+    <div class="kpi-card"><div class="kpi-value">${Math.round(dp/n*100)}%</div><div class="kpi-label">Pray Daily</div></div>`;
+  document.getElementById('kpi-engagement').innerHTML = `
+    <div class="kpi-card"><div class="kpi-value">${Math.round(dp/n*100)}%</div><div class="kpi-label">Pray Daily</div></div>
+    <div class="kpi-card"><div class="kpi-value">${Math.round(db/n*100)}%</div><div class="kpi-label">Read Bible Daily</div></div>
+    <div class="kpi-card"><div class="kpi-value">${Math.round(hy/n*100)}%</div><div class="kpi-label">Home Church</div></div>
+    <div class="kpi-card"><div class="kpi-value">${Math.round(my/n*100)}%</div><div class="kpi-label">Inducted Members</div></div>`;
+}
+
+function renderInsights() {
+  const s=DATA.summary;
+  const tp=Object.entries(s.program_counts).sort((a,b)=>b[1]-a[1]);
+  const tg=Object.entries(s.multi_select_counts.faith_growth_goals).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('insight-overview').innerHTML = `<strong>Key Highlights:</strong>
+    ${DATA.metadata.total_responses} responses received.
+    Avg. recommendation to a Christian: <strong>${s.numeric_averages.nps_christian.mean}/10</strong>.
+    Top beneficial program: <strong>${tp[0][0]}</strong> (${tp[0][1]} mentions).
+    #1 faith growth goal: <strong>\u201c${tg[0]}\u201d</strong> (${tg[1]} respondents).
+    Email is the most preferred channel (avg ${s.numeric_averages.pref_email.mean}/5).`;
+  document.getElementById('insight-programs').innerHTML = `<strong>Programs Insight:</strong>
+    <strong>${tp[0][0]}</strong> was most cited (${tp[0][1]} mentions), followed by <strong>${tp[1][0]}</strong> and <strong>${tp[2][0]}</strong>.
+    Top ministry: <strong>${Object.entries(s.multi_select_counts.ministries_participated).sort((a,b)=>b[1]-a[1])[0][0]}</strong>.
+    Use the Deep Dive below to see who participates in each ministry.`;
+}
+
+function renderOverview() {
+  const s=DATA.summary;
+  makeHBar('chart-service',s.distributions.service,null,GRAD_TEAL,{aspectRatio:2.2});
+  makeVBar('chart-tenure',s.distributions.attendance_length,ORDERED_TENURE,GRAD_BLUE);
+  makeVBar('chart-age',s.distributions.age_group,ORDERED_AGE,GRAD_GOLD);
+  const rl=['1','2','3','4','5','6','7','8','9','10'];
+  const cd=s.numeric_averages.nps_christian.distribution, nd=s.numeric_averages.nps_non_christian.distribution;
+  makeChart('chart-rec-overview','bar',rl,[
+    {label:'To a Christian',data:rl.map(l=>cd[l]||0),backgroundColor:'#2b7a78',borderRadius:4,maxBarThickness:32},
+    {label:'To a Non-Christian',data:rl.map(l=>nd[l]||0),backgroundColor:'#d4a843',borderRadius:4,maxBarThickness:32},
+  ],{showLegend:true,showPct:false});
+}
+
+function renderDemographics() {
+  const s=DATA.summary;
+  makeHBar('chart-gender',s.distributions.gender,null,CAT.slice(0),{aspectRatio:2.2});
+  makeVBar('chart-age-demo',s.distributions.age_group,ORDERED_AGE,GRAD_GOLD);
+  makeHBar('chart-ethnicity',s.distributions.ethnicity,null,GRAD_TEAL);
+  makeHBar('chart-marital',s.distributions.marital_status,null,CAT.slice(0));
+  makeVBar('chart-years-toronto',s.distributions.years_in_toronto,ORDERED_TORONTO,GRAD_BLUE);
+  makeHBar('chart-education',s.distributions.education,null,GRAD_SLATE);
+  makeHBar('chart-languages',s.multi_select_counts.languages,null,GRAD_BLUE,{aspectRatio:1.6});
+  makeHBar('chart-employment',s.distributions.employment_status,null,CAT.slice(2));
+  makeHBar('chart-industry',s.distributions.industry,null,GRAD_TEAL);
+  makeVBar('chart-income',s.distributions.income,ORDERED_INCOME,GRAD_GOLD,{aspectRatio:1.8});
+}
+
+function renderEngagement() {
+  const s=DATA.summary;
+  makeVBar('chart-prayer',s.distributions.prayer_frequency,ORDERED_PRAYER,GRAD_GREEN);
+  makeVBar('chart-bible',s.distributions.bible_reading_frequency,ORDERED_PRAYER,GRAD_TEAL);
+  makeHBar('chart-faith',s.distributions.faith_description,null,GRAD_GOLD);
+  makeHBar('chart-baptized',s.distributions.baptized,null,[CAT[0],CAT[3]],{aspectRatio:2.2});
+  makeHBar('chart-home',s.distributions.home_church,null,[CAT[4],CAT[2]],{aspectRatio:2.2});
+  makeHBar('chart-member',s.distributions.inducted_member,null,[CAT[3],CAT[1]],{aspectRatio:2.2});
+  const goals=s.multi_select_counts.faith_growth_goals;
+  const tg=Object.entries(goals).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  makeChart('chart-growth','bar',tg.map(e=>e[0].length>50?e[0].substring(0,47)+'...':e[0]),
+    [{data:tg.map(e=>e[1]),backgroundColor:GRAD_GREEN(tg.length),borderRadius:4,maxBarThickness:28}],
+    {indexAxis:'y',aspectRatio:1.6});
+  renderEngExplorer();
+}
+
+function renderPrograms() {
+  const s=DATA.summary;
+  const me=Object.entries(s.multi_select_counts.ministries_participated).sort((a,b)=>b[1]-a[1]);
+  makeChart('chart-ministries','bar',me.map(e=>e[0].length>40?e[0].substring(0,37)+'...':e[0]),
+    [{data:me.map(e=>e[1]),backgroundColor:GRAD_TEAL(me.length),borderRadius:4,maxBarThickness:22}],{indexAxis:'y',aspectRatio:0.9});
+  const pe=Object.entries(s.program_counts).sort((a,b)=>b[1]-a[1]);
+  makeChart('chart-beneficial','bar',pe.map(e=>e[0]),
+    [{data:pe.map(e=>e[1]),backgroundColor:GRAD_GOLD(pe.length),borderRadius:4,maxBarThickness:22}],{indexAxis:'y',aspectRatio:0.9});
+  const fe=Object.entries(s.multi_select_counts.future_programs).sort((a,b)=>b[1]-a[1]);
+  makeChart('chart-future','bar',fe.map(e=>e[0]),
+    [{data:fe.map(e=>e[1]),backgroundColor:GRAD_GREEN(fe.length),borderRadius:4,maxBarThickness:22}],{indexAxis:'y',aspectRatio:1});
+  const ee=Object.entries(s.multi_select_counts.what_excites).filter(([k])=>k.length<60).sort((a,b)=>b[1]-a[1]);
+  makeChart('chart-excites','bar',ee.map(e=>e[0].length>45?e[0].substring(0,42)+'...':e[0]),
+    [{data:ee.map(e=>e[1]),backgroundColor:GRAD_SLATE(ee.length),borderRadius:4,maxBarThickness:22}],{indexAxis:'y',aspectRatio:1.2});
+  renderProgExplorer();
+}
+
+function renderSatisfaction() {
+  const s=DATA.summary;
+  renderRecGauge('rec-christian',s.numeric_averages.nps_christian);
+  renderRecGauge('rec-non-christian',s.numeric_averages.nps_non_christian);
+  const rl=['0','1','2','3','4','5','6','7','8','9','10'];
+  const cd=s.numeric_averages.nps_christian.distribution, nd=s.numeric_averages.nps_non_christian.distribution;
+  const rc=rl.map(l=>{const v=parseInt(l);return v>=9?'#2b7a78':v>=7?'#d4a843':'#c06c84'});
+  makeChart('chart-rec-dist-c','bar',rl,[{data:rl.map(l=>cd[l]||0),backgroundColor:rc,borderRadius:4,maxBarThickness:48}],{showPct:false});
+  makeChart('chart-rec-dist-nc','bar',rl,[{data:rl.map(l=>nd[l]||0),backgroundColor:rc,borderRadius:4,maxBarThickness:48}],{showPct:false});
+  renderSatExplorer();
+}
+
+function renderOperations() {
+  const s=DATA.summary, na=s.numeric_averages;
+  const al=['Wkday Eve','Wkday Morn','Sat Morn','Sat Eve','Sun 9\u201311','Sun 11\u20131','Sun 12:45\u20132'];
+  const ak=['avail_weekday_evening','avail_weekday_morning','avail_saturday_morning','avail_saturday_evening','avail_sunday_before_2nd','avail_sunday_after_1st','avail_sunday_afternoon'];
+  makeChart('chart-avail','bar',al,[{data:ak.map(k=>na[k]?.mean||0),backgroundColor:GRAD_BLUE(al.length),borderRadius:4,maxBarThickness:48}],
+    {isAverage:true,showPct:false,extra:{scales:{y:{beginAtZero:true,max:5,grid:{color:'#f1f5f9'}}}},tooltipCallbacks:{label:c=>`Avg: ${c.parsed.y.toFixed(2)} / 5`}});
+  const cl=['Email','Verbal','Facebook','Instagram'];
+  const ck=['pref_email','pref_verbal_announcements','pref_facebook','pref_instagram'];
+  makeChart('chart-comms','bar',cl,[{data:ck.map(k=>na[k]?.mean||0),backgroundColor:GRAD_GOLD(cl.length),borderRadius:4,maxBarThickness:48}],
+    {isAverage:true,showPct:false,extra:{scales:{y:{beginAtZero:true,max:5,grid:{color:'#f1f5f9'}}}},tooltipCallbacks:{label:c=>`Avg: ${c.parsed.y.toFixed(2)} / 5`}});
+  makeHBar('chart-commute-method',s.multi_select_counts.commute_method,null,GRAD_SLATE);
+  makeVBar('chart-commute-length',s.distributions.commute_length,ORDERED_COMMUTE,GRAD_BLUE);
+  makeHBar('chart-heard',groupSmallCategories(s.distributions.how_heard,KNOWN_HEARD),null,GRAD_TEAL);
+  makeHBar('chart-children',s.distributions.has_children_at_gtc,null,[CAT[0],CAT[4]],{aspectRatio:2.2});
+  renderOpsExplorer();
+}
+
+function populateFilters(){
+  const s=DATA.summary.distributions;
+  const add=(id,d)=>{const sel=document.getElementById(id);for(const k of Object.keys(d)){const o=document.createElement('option');o.value=k;o.textContent=k;sel.appendChild(o)}};
+  add('filter-service',s.service);add('filter-age',s.age_group);add('filter-gender',s.gender);add('filter-tenure',s.attendance_length);
+}
+function getFilteredRecords(){
+  const sv=document.getElementById('filter-service').value,ag=document.getElementById('filter-age').value;
+  const ge=document.getElementById('filter-gender').value,te=document.getElementById('filter-tenure').value;
+  return DATA.records.filter(r=>(!sv||r.service===sv)&&(!ag||r.age_group===ag)&&(!ge||r.gender===ge)&&(!te||r.attendance_length===te));
+}
+const TABLE_COLS=[
+  {key:'service',label:'Service'},{key:'age_group',label:'Age'},{key:'gender',label:'Gender'},
+  {key:'attendance_length',label:'Tenure'},{key:'prayer_frequency',label:'Prayer'},
+  {key:'faith_description',label:'Faith'},{key:'nps_christian',label:'Rec (Chr)'},
+  {key:'nps_non_christian',label:'Rec (NC)'},{key:'beneficial_programs',label:'Beneficial Programs'},{key:'ethnicity',label:'Ethnicity'},
+];
+function renderTable(){
+  const f=getFilteredRecords();
+  document.getElementById('filter-count').textContent=`${f.length} of ${DATA.records.length} responses`;
+  document.getElementById('data-thead').innerHTML=TABLE_COLS.map(c=>`<th>${c.label}</th>`).join('');
+  document.getElementById('data-tbody').innerHTML=f.slice(0,100).map(r=>'<tr>'+TABLE_COLS.map(c=>{let v=r[c.key];if(Array.isArray(v))v=v.join(', ');if(v==null)v='\u2014';return`<td>${v}</td>`}).join('')+'</tr>').join('')
+    +(f.length>100?`<tr><td colspan="${TABLE_COLS.length}" style="text-align:center;color:var(--grey-dark)">Showing first 100 of ${f.length}</td></tr>`:'');
+}
+function resetFilters(){['filter-service','filter-age','filter-gender','filter-tenure'].forEach(id=>document.getElementById(id).value='');renderTable()}
+
+let chartsRendered={};
+function switchSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelector(`[data-section="${id}"]`).classList.add('active');
+  if(!chartsRendered[id]){chartsRendered[id]=true;
+    ({overview:()=>{renderKPIs();renderInsights();renderOverview()},demographics:renderDemographics,
+      engagement:renderEngagement,programs:renderPrograms,satisfaction:renderSatisfaction,
+      operations:renderOperations,explore:()=>{populateFilters();renderTable()}})[id]?.();
+  }
+}
+document.getElementById('nav').addEventListener('click',e=>{if(e.target.dataset.section)switchSection(e.target.dataset.section)});
+['filter-service','filter-age','filter-gender','filter-tenure'].forEach(id=>document.getElementById(id).addEventListener('change',renderTable));
+
+document.getElementById('eng-metric').addEventListener('change', renderEngExplorer);
+document.getElementById('eng-dimension').addEventListener('change', renderEngExplorer);
+document.getElementById('prog-dimension').addEventListener('change', renderProgExplorer);
+document.getElementById('sat-metric').addEventListener('change', renderSatExplorer);
+document.getElementById('sat-dimension').addEventListener('change', renderSatExplorer);
+document.getElementById('ops-metric').addEventListener('change', renderOpsExplorer);
+document.getElementById('ops-dimension').addEventListener('change', renderOpsExplorer);
+
+fetch('survey_data.json').then(r=>r.json()).then(data=>{
+  DATA=data;
+  document.getElementById('resp-count').textContent=data.metadata.total_responses;
+  switchSection('overview');
+}).catch(err=>{
+  document.getElementById('app').innerHTML=`<div style="text-align:center;padding:4rem 2rem"><h2>Could not load survey data</h2>
+    <p style="color:var(--grey-dark);margin-top:.5rem">Make sure <code>survey_data.json</code> is in the same folder.</p>
+    <p style="color:var(--red);margin-top:1rem;font-size:.85rem">${err.message}</p></div>`;
+});
+</script>
+</body>
+</html>

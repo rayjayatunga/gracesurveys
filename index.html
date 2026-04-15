@@ -7,6 +7,13 @@
 <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&f[]=erode@400,500,600,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <style>
   :root {
     --brand: #f4c449;
@@ -213,6 +220,152 @@
 
   .footer { text-align: center; padding: 1.25rem; color: var(--grey-dark); font-size: .8rem; }
 
+  /* ── Slides deck ── */
+  .slides-wrap { position: relative; }
+  .slide-viewport {
+    position: relative; overflow: hidden;
+    background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+    aspect-ratio: 16 / 9; max-height: 80vh;
+  }
+  .slide {
+    position: absolute; inset: 0;
+    padding: 2rem 3rem;
+    opacity: 0; pointer-events: none;
+    transition: opacity .35s ease;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .slide.active { opacity: 1; pointer-events: auto; }
+  .slide-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: .75rem; flex-shrink: 0;
+  }
+  .slide-header h2 { font-size: 1.5rem; font-weight: 700; color: var(--dark); }
+  .slide-header .slide-badge {
+    font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+    background: var(--brand); color: var(--dark); padding: .25rem .6rem; border-radius: 4px;
+  }
+  .slide-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+
+  .slide-title-slide {
+    background: var(--dark); color: var(--white);
+    justify-content: center; align-items: center; text-align: center;
+  }
+  .slide-title-slide .brand-bar { background: var(--brand); height: 4px; width: 80px; border-radius: 2px; margin: 0 auto 1.5rem; }
+  .slide-title-slide h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: .35rem; }
+  .slide-title-slide .subtitle { font-size: 1.1rem; opacity: .7; margin-bottom: 1.5rem; }
+  .slide-title-slide .meta { font-size: .85rem; opacity: .5; }
+
+  .slide-kpi-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: .5rem; margin-bottom: .75rem;
+  }
+  .slide-kpi {
+    background: var(--grey-light); border-radius: 8px; padding: .45rem .6rem; text-align: center;
+  }
+  .slide-kpi .val { font-family: 'Erode', serif; font-size: 1.3rem; font-weight: 700; color: var(--dark); }
+  .slide-kpi .lbl { font-size: .6rem; color: var(--grey-dark); text-transform: uppercase; letter-spacing: .5px; margin-top: .05rem; }
+  .slide-kpi.brand .val { color: var(--green); }
+
+  .slide-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; flex: 1; min-height: 0; }
+  .slide-cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .slide-col { display: flex; flex-direction: column; min-height: 0; }
+  .slide-col h3, .slide h3 { font-size: .72rem; font-weight: 600; color: var(--grey-dark); text-transform: uppercase; letter-spacing: .5px; margin-bottom: .3rem; flex-shrink: 0; }
+  .slide-col canvas { flex: 1; min-height: 0; }
+
+  .slide-rank-list { list-style: none; padding: 0; margin: 0; }
+  .slide-rank-list li {
+    display: flex; align-items: center; gap: .35rem;
+    padding: .18rem 0; font-size: .68rem; border-bottom: 1px solid #f0f0f0;
+  }
+  .slide-rank-list .rank {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--brand); color: var(--dark);
+    font-size: .55rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .slide-rank-list .bar-fill {
+    height: 5px; border-radius: 3px; background: var(--brand); flex-shrink: 0;
+  }
+  .slide-rank-list .count { font-size: .65rem; font-weight: 600; color: var(--grey-dark); margin-left: auto; white-space: nowrap; }
+
+  .slide-stat-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: .6rem; margin-top: .5rem;
+  }
+  .slide-stat { text-align: center; padding: .5rem; }
+  .slide-stat .num { font-family: 'Erode', serif; font-size: 1.8rem; font-weight: 700; }
+  .slide-stat .desc { font-size: .7rem; color: var(--grey-dark); }
+
+  .slide-treemap {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    flex: 1; align-content: flex-start;
+  }
+  .slide-treemap-item {
+    border-radius: 8px; padding: .6rem .75rem;
+    display: flex; flex-direction: column; justify-content: center;
+    color: var(--white); font-weight: 600;
+  }
+  .slide-treemap-item .tm-val { font-family: 'Erode', serif; font-size: 1.3rem; font-weight: 700; }
+  .slide-treemap-item .tm-lbl { font-size: .68rem; opacity: .9; line-height: 1.2; }
+
+  .slide-nps-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .slide-nps-box { text-align: center; }
+  .slide-nps-box .nps-type { font-size: .75rem; color: var(--grey-dark); text-transform: uppercase; letter-spacing: .5px; margin-bottom: .35rem; }
+  .slide-nps-box .nps-score { font-family: 'Erode', serif; font-size: 3rem; font-weight: 700; }
+  .slide-nps-box .nps-label { font-size: .75rem; color: var(--grey-dark); }
+  .slide-nps-segments { display: flex; gap: .5rem; justify-content: center; margin-top: .6rem; }
+  .slide-nps-seg { padding: .35rem .6rem; border-radius: 6px; font-size: .75rem; text-align: center; }
+  .slide-nps-seg .seg-pct { font-weight: 700; font-size: 1rem; display: block; }
+
+  #slide-map { width: 100%; flex: 1; min-height: 0; border-radius: 8px; z-index: 1; }
+  .cluster-icon {
+    border-radius: 50%; color: #fff; font-family: 'Switzer', sans-serif;
+    font-weight: 700; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25); border: 2px solid #fff;
+  }
+  .cluster-sm { background: #2b7a78; width: 32px; height: 32px; font-size: .75rem; }
+  .cluster-md { background: #d4a843; width: 40px; height: 40px; font-size: .85rem; }
+  .cluster-lg { background: #c06c84; width: 50px; height: 50px; font-size: .95rem; }
+  .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background: none !important; }
+  .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div { background: none !important; }
+  .church-label {
+    font-family: 'Switzer', sans-serif; font-size: .7rem; font-weight: 600;
+    color: var(--dark); white-space: nowrap; background: var(--brand);
+    padding: 2px 6px; border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,.15);
+  }
+
+  .slide-nav {
+    display: flex; align-items: center; justify-content: center; gap: 1rem;
+    margin-top: 1rem;
+  }
+  .slide-nav button {
+    padding: .45rem 1rem; border: 1px solid var(--grey-med); border-radius: 6px;
+    background: var(--white); font-family: 'Switzer', sans-serif; font-size: .82rem;
+    cursor: pointer; transition: all .15s; font-weight: 500;
+  }
+  .slide-nav button:hover { background: var(--grey-light); }
+  .slide-nav button:disabled { opacity: .3; cursor: default; }
+  .slide-nav .dots { display: flex; gap: .35rem; }
+  .slide-nav .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--grey-med);
+    cursor: pointer; transition: all .15s; border: none;
+  }
+  .slide-nav .dot.active { background: var(--dark); transform: scale(1.25); }
+  .slide-nav .export-btn {
+    margin-left: 1rem; background: var(--dark); color: var(--white); border-color: var(--dark);
+  }
+  .slide-nav .export-btn:hover { opacity: .85; }
+
+  @media (max-width: 900px) {
+    .slide { padding: 1.5rem; }
+    .slide-header h2 { font-size: 1.1rem; }
+    .slide-cols { grid-template-columns: 1fr; }
+    .slide-cols-3 { grid-template-columns: 1fr; }
+    .slide-title-slide h1 { font-size: 1.5rem; }
+    .slide-nps-pair { grid-template-columns: 1fr; }
+  }
+
   /* ── Password gate ── */
   .gate-overlay {
     position: fixed; inset: 0; z-index: 9999;
@@ -293,6 +446,7 @@
   <button data-section="satisfaction">Satisfaction</button>
   <button data-section="operations">Operations</button>
   <button data-section="explore">Explore Data</button>
+  <button data-section="slides">Slides</button>
 </nav>
 <div class="container" id="app">
 
@@ -305,6 +459,19 @@
       <div class="chart-card"><h3>Tenure at Grace Toronto</h3><canvas id="chart-tenure"></canvas></div>
       <div class="chart-card"><h3>Age Distribution</h3><canvas id="chart-age"></canvas></div>
       <div class="chart-card"><h3>Likelihood to Recommend</h3><canvas id="chart-rec-overview"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ SLIDES ════════════════════ -->
+  <div class="section" id="sec-slides">
+    <div class="slides-wrap">
+      <div class="slide-viewport" id="slide-viewport"></div>
+      <div class="slide-nav">
+        <button id="slide-prev" disabled>&larr; Prev</button>
+        <div class="dots" id="slide-dots"></div>
+        <button id="slide-next">Next &rarr;</button>
+        <button class="export-btn" id="slide-export">Export PDF</button>
+      </div>
     </div>
   </div>
 
@@ -1083,6 +1250,476 @@ function renderTable(){
 }
 function resetFilters(){['filter-service','filter-age','filter-gender','filter-tenure'].forEach(id=>document.getElementById(id).value='');renderTable()}
 
+// ── Slides deck ──
+const POSTAL_COORDS = {
+  'M5V':[43.6394,-79.3946],'M5A':[43.6555,-79.3626],'M4Y':[43.6658,-79.3842],'M5G':[43.6579,-79.3873],
+  'M5B':[43.6572,-79.3789],'M4S':[43.6882,-79.3838],'M4C':[43.6845,-79.3180],'M5S':[43.6627,-79.3960],
+  'M2N':[43.7701,-79.4085],'M5J':[43.6425,-79.3771],'M5E':[43.6447,-79.3692],'M2J':[43.7789,-79.3465],
+  'M4X':[43.6679,-79.3547],'M6H':[43.6690,-79.4422],'M2K':[43.7735,-79.3900],'M5C':[43.6543,-79.3716],
+  'M4L':[43.6689,-79.3155],'M4P':[43.7128,-79.3894],'M5T':[43.6532,-79.4007],'M5R':[43.6727,-79.4054],
+  'M4E':[43.6763,-79.2930],'M3A':[43.7527,-79.3296],'M6C':[43.6938,-79.4282],'M1T':[43.7854,-79.3041],
+  'M4G':[43.7090,-79.3634],'M4J':[43.6852,-79.3388],'M4W':[43.6787,-79.3773],'M1R':[43.7516,-79.2709],
+  'M6G':[43.6698,-79.4234],'M4N':[43.7283,-79.3887],'M6J':[43.6479,-79.4191],'M3J':[43.7677,-79.4870],
+  'M4T':[43.6895,-79.3831],'M4K':[43.6793,-79.3524],'M6P':[43.6617,-79.4636],'M6K':[43.6363,-79.4281],
+  'M6R':[43.6489,-79.4563],'M5P':[43.6969,-79.4113],'M1S':[43.7942,-79.2620],'M1P':[43.7574,-79.2730],
+  'M3C':[43.7254,-79.3407],'M5M':[43.7333,-79.4178],'M3H':[43.7544,-79.4439],'M4H':[43.7054,-79.3493],
+  'M1L':[43.7115,-79.2847],'M1B':[43.8068,-79.1943],'M8V':[43.6056,-79.5013],'M9A':[43.6671,-79.5322],
+  'M1K':[43.7279,-79.2620],'M2M':[43.7898,-79.4157],'M3N':[43.7616,-79.5209],'M6B':[43.7093,-79.4450],
+  'M6E':[43.6890,-79.4501],'M6S':[43.6515,-79.4845],'M9B':[43.6509,-79.5547],'M4M':[43.6595,-79.3407],
+  'M9W':[43.7063,-79.5941],'M8W':[43.6025,-79.5434],'M4R':[43.7156,-79.4046],
+  'L6E':[43.8760,-79.2437],'L4G':[43.8680,-79.4710],'L4L':[43.8175,-79.5544],'L4S':[43.8580,-79.4320],
+  'L4C':[43.8530,-79.4280],'L1S':[43.8362,-79.0843],'L5N':[43.5987,-79.7157],'L5B':[43.5890,-79.6441],
+  'L5V':[43.5680,-79.6870],'L3R':[43.8540,-79.3470],'L6B':[43.8630,-79.3200],'L1G':[43.8999,-78.8591],
+  'V3J':[49.2270,-122.7560],
+};
+
+let slideIdx = 0;
+let slideMap = null;
+const slideCharts = [];
+
+function buildSlides() {
+  const s = DATA.summary, n = DATA.metadata.total_responses, na = s.numeric_averages;
+  const pct = (v) => Math.round(v / n * 100);
+  const dist = s.distributions;
+
+  const ageEntries = ORDERED_AGE.map(k => [k, dist.age_group[k] || 0]);
+  const topEth = Object.entries(dist.ethnicity).sort((a,b) => b[1]-a[1]).slice(0, 5);
+  const topMin = Object.entries(s.multi_select_counts.ministries_participated).sort((a,b) => b[1]-a[1]).slice(0, 6);
+  const topProg = Object.entries(s.program_counts).sort((a,b) => b[1]-a[1]).slice(0, 5);
+  const topGoals = Object.entries(s.multi_select_counts.faith_growth_goals).sort((a,b) => b[1]-a[1]).slice(0, 5);
+  const topExcites = Object.entries(s.multi_select_counts.what_excites).sort((a,b) => b[1]-a[1]).slice(0, 6);
+  const topFuture = Object.entries(s.multi_select_counts.future_programs).sort((a,b) => b[1]-a[1]).slice(0, 5);
+
+  const dp = dist.prayer_frequency['Daily'] || 0;
+  const db = dist.bible_reading_frequency['Daily'] || 0;
+  const hy = dist.home_church['Yes'] || 0;
+  const my = dist.inducted_member['Yes'] || 0;
+  const by = dist.baptized['Yes'] || 0;
+
+  const npsC = na.nps_christian, npsNC = na.nps_non_christian;
+  function npsSegments(d) {
+    const vals = Object.entries(d.distribution).map(([k,v]) => [parseInt(k), v]);
+    const total = vals.reduce((s,[,v]) => s+v, 0);
+    const hi = vals.filter(([k]) => k>=9).reduce((s,[,v]) => s+v, 0);
+    const mid = vals.filter(([k]) => k>=7 && k<=8).reduce((s,[,v]) => s+v, 0);
+    const lo = vals.filter(([k]) => k<=6).reduce((s,[,v]) => s+v, 0);
+    return { hi: Math.round(hi/total*100), mid: Math.round(mid/total*100), lo: Math.round(lo/total*100) };
+  }
+  const segC = npsSegments(npsC), segNC = npsSegments(npsNC);
+
+  function rankList(entries) {
+    const mx = entries[0]?.[1] || 1;
+    return `<ul class="slide-rank-list">${entries.map(([k,v], i) =>
+      `<li><span class="rank">${i+1}</span><span style="flex:1">${k}</span><span class="bar-fill" style="width:${Math.round(v/mx*50)}px"></span><span class="count">${Math.round(v/n*100)}%</span></li>`
+    ).join('')}</ul>`;
+  }
+
+  const tmColors = ['#2b7a78','#d4a843','#c06c84','#5b7fa5','#6b9e6b','#c4724e'];
+  function treemap(entries) {
+    const total = entries.reduce((s,[,v]) => s+v, 0);
+    return `<div class="slide-treemap">${entries.map(([k,v], i) => {
+      const pctVal = Math.round(v/n*100);
+      const area = Math.max(18, Math.round(v/total*100));
+      return `<div class="slide-treemap-item" style="background:${tmColors[i%tmColors.length]};flex:${area} 1 0;min-width:28%"><span class="tm-val">${pctVal}%</span><span class="tm-lbl">${k}</span></div>`;
+    }).join('')}</div>`;
+  }
+
+  const serviceEntries = Object.entries(dist.service).sort((a,b) => b[1]-a[1]);
+  const tenureShort = {'0-6 months':'< 6mo','6-12 months':'6-12mo','1-2 years':'1-2y','2-3 years':'2-3y','3-4 years':'3-4y','4-5 years':'4-5y','More than 5 years':'5y+'};
+
+  const singleByGender = { Female: 0, Male: 0 };
+  DATA.records.forEach(r => { if ((r.marital_status === 'Single' || r.marital_status === 'Divorced') && r.gender && singleByGender[r.gender] !== undefined) singleByGender[r.gender]++; });
+  const singleTotal = (dist.marital_status['Single'] || 0) + (dist.marital_status['Divorced'] || 0);
+  const marriedTotal = dist.marital_status['Married'] || 0;
+  const maritalResponded = singleTotal + marriedTotal;
+
+  const EDU_ORDER = ['High School Diploma','College Degree / Diploma',"Bachelor's Degree","Master's Degree",'Doctorate'];
+  const EDU_SHORT = {'High School Diploma':'High School','College Degree / Diploma':'College',"Bachelor's Degree":"Bachelor's","Master's Degree":"Master's",'Doctorate':'Doctorate'};
+
+  const slides = [
+    // 0 - Title
+    `<div class="slide slide-title-slide active">
+      <div class="brand-bar"></div>
+      <h1>Grace Toronto Church</h1>
+      <div class="subtitle">2025 Annual Pulse Survey Results</div>
+      <div class="meta">${n} respondents &middot; Executive Summary</div>
+    </div>`,
+
+    // 1 - At a Glance
+    (() => {
+      const bar = (label, val, total, color) => `<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.3rem"><span style="font-size:.72rem;width:75px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${label}</span><div style="flex:1;height:14px;background:#f0f0f0;border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.round(val/total*100)}%;background:${color};border-radius:3px"></div></div><span style="font-size:.7rem;color:var(--grey-dark);width:32px;text-align:right">${Math.round(val/n*100)}%</span></div>`;
+      const topEthSlice = Object.entries(dist.ethnicity).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      const eduOrdered = EDU_ORDER.filter(k => (dist.education||{})[k]).map(k => [EDU_SHORT[k]||k, dist.education[k]]);
+      const singlePct = Math.round(singleTotal/maritalResponded*100);
+      const marriedPct = Math.round(marriedTotal/maritalResponded*100);
+      const singleFPct = singleTotal ? Math.round(singleByGender.Female/singleTotal*100) : 0;
+      const singleMPct = singleTotal ? Math.round(singleByGender.Male/singleTotal*100) : 0;
+      return `<div class="slide">
+      <div class="slide-header"><h2>At a Glance</h2><span class="slide-badge">n=${n}</span></div>
+      <div class="slide-body">
+        <div class="slide-kpi-row">
+          <div class="slide-kpi"><div class="val">${n}</div><div class="lbl">Responses</div></div>
+          <div class="slide-kpi"><div class="val">${pct(hy)}%</div><div class="lbl">Call GTC Home</div></div>
+          <div class="slide-kpi"><div class="val">${pct(dp)}%</div><div class="lbl">Pray Daily</div></div>
+          <div class="slide-kpi"><div class="val">${pct(by)}%</div><div class="lbl">Baptized</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 0px 1fr;gap:0 1.5rem;flex:1;min-height:0">
+          <div style="display:flex;flex-direction:column;gap:0">
+            <h3>\u26EA Service</h3>
+            <div style="display:flex;gap:.4rem;margin-bottom:.5rem">
+              ${serviceEntries.map(([k,v]) => `<div style="flex:1;background:var(--grey-light);border-radius:8px;padding:.4rem .5rem;display:flex;align-items:baseline;justify-content:space-between"><span style="font-size:.72rem;font-weight:500;color:var(--dark)">${k}</span><span style="font-family:'Erode',serif;font-size:1rem;font-weight:700;color:var(--dark)">${Math.round(v/n*100)}%</span></div>`).join('')}
+            </div>
+            <div style="display:flex;gap:.8rem;margin-bottom:.5rem">
+              <div style="flex:1">
+                <h3>\u{1F464} Gender</h3>
+                <div style="display:flex;gap:.35rem">
+                  <div style="flex:1;background:var(--grey-light);border-radius:8px;padding:.35rem .5rem;display:flex;align-items:baseline;justify-content:space-between"><span style="font-size:.72rem;color:var(--dark)">Female</span><span style="font-family:'Erode',serif;font-size:1rem;font-weight:700;color:#2b7a78">${pct(dist.gender['Female']||0)}%</span></div>
+                  <div style="flex:1;background:var(--grey-light);border-radius:8px;padding:.35rem .5rem;display:flex;align-items:baseline;justify-content:space-between"><span style="font-size:.72rem;color:var(--dark)">Male</span><span style="font-family:'Erode',serif;font-size:1rem;font-weight:700;color:#d4a843">${pct(dist.gender['Male']||0)}%</span></div>
+                </div>
+              </div>
+              <div style="flex:1.2">
+                <h3>\u{1F48D} Marital Status</h3>
+                <div style="background:var(--grey-light);border-radius:8px;padding:.35rem .5rem;display:flex;align-items:stretch;gap:0">
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding-right:.4rem">
+                    <div style="display:flex;align-items:baseline;gap:.3rem"><span style="font-size:.72rem;color:var(--dark)">Single</span><span style="font-family:'Erode',serif;font-size:1rem;font-weight:700">${singlePct}%</span></div>
+                    <div style="display:flex;gap:.3rem;margin-top:.1rem">
+                      <span style="font-size:.58rem"><strong style="color:#2b7a78">${singleFPct}%</strong> F</span>
+                      <span style="font-size:.58rem"><strong style="color:#d4a843">${singleMPct}%</strong> M</span>
+                    </div>
+                  </div>
+                  <div style="width:1px;background:var(--grey-med);flex-shrink:0"></div>
+                  <div style="flex:1;display:flex;align-items:baseline;justify-content:center;gap:.3rem;padding-left:.4rem">
+                    <span style="font-size:.72rem;color:var(--dark)">Married</span><span style="font-family:'Erode',serif;font-size:1rem;font-weight:700">${marriedPct}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <h3>\u23F3 Tenure</h3>
+            ${ORDERED_TENURE.map(k => bar(tenureShort[k]||k, dist.attendance_length[k]||0, n, '#5b7fa5')).join('')}
+          </div>
+          <div style="background:#e0e0e0;width:1px;justify-self:center"></div>
+          <div style="display:flex;flex-direction:column;gap:0">
+            <h3>\u{1F382} Age</h3>
+            ${ORDERED_AGE.map(k => bar(k, dist.age_group[k]||0, n, '#8b6914')).join('')}
+            <h3 style="margin-top:.5rem">\u{1F30D} Ethnicity (Top 5)</h3>
+            ${topEthSlice.map(([k,v]) => bar(k, v, n, '#2b7a78')).join('')}
+            <h3 style="margin-top:.5rem">\u{1F393} Education</h3>
+            ${eduOrdered.map(([k,v]) => bar(k, v, n, '#5b7fa5')).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+    })(),
+
+    // 2 - Spiritual Life, Programs & Satisfaction
+    `<div class="slide">
+      <div class="slide-header"><h2>Spiritual Life & Involvement</h2><span class="slide-badge">Engagement</span></div>
+      <div class="slide-body">
+        <div class="slide-kpi-row">
+          <div class="slide-kpi"><div class="val">${pct(dp)}%</div><div class="lbl">Pray Daily</div></div>
+          <div class="slide-kpi"><div class="val">${pct(db)}%</div><div class="lbl">Read Bible Daily</div></div>
+          <div class="slide-kpi"><div class="val">${pct(hy)}%</div><div class="lbl">Call GTC Home</div></div>
+          <div class="slide-kpi"><div class="val">${pct(my)}%</div><div class="lbl">Inducted Members</div></div>
+          <div class="slide-kpi" style="border-left:2px solid #e0e0e0">
+            <div class="val" style="font-size:1rem"><span style="color:${npsC.mean>=8.5?'var(--green)':npsC.mean>=7?'var(--amber)':'var(--red)'}">${npsC.mean}</span> / <span style="color:${npsNC.mean>=8.5?'var(--green)':npsNC.mean>=7?'var(--amber)':'var(--red)'}">${npsNC.mean}</span></div>
+            <div class="lbl">Recommend (Chr / Non-Chr)</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 0px 1fr;gap:0 1.5rem;flex:1">
+          <div style="display:flex;flex-direction:column;gap:0">
+            <h3>\u{1F64F} Faith Growth Goals</h3>
+            ${rankList(topGoals)}
+            <h3 style="margin-top:.5rem">\u{1F525} What Excites Us About GTC</h3>
+            ${topExcites.map(([k,v]) => {const p=Math.round(v/n*100); const mxE=topExcites[0][1]; return `<div style="display:flex;align-items:center;gap:.4rem;padding:.18rem 0;border-bottom:1px solid #f0f0f0"><span style="font-size:.68rem;flex:1">${k}</span><div style="display:flex;align-items:center;gap:.3rem"><div style="width:${Math.round(v/mxE*60)}px;height:4px;border-radius:3px;background:#2b7a78"></div><span style="font-size:.65rem;font-weight:700;color:#2b7a78;white-space:nowrap">${p}%</span></div></div>`}).join('')}
+          </div>
+          <div style="background:#e0e0e0;width:1px;justify-self:center"></div>
+          <div style="display:flex;flex-direction:column;gap:0">
+            <h3>\u{26EA} Most Participated</h3>
+            ${rankList(topMin)}
+            <h3 style="margin-top:.5rem">\u{1F4DA} Reported Most Beneficial</h3>
+            ${rankList(topProg)}
+            <h3 style="margin-top:.5rem">\u{1F4AC} Most Requested</h3>
+            ${rankList(topFuture)}
+          </div>
+        </div>
+      </div>
+    </div>`,
+
+    // 3 - Our Neighbourhood
+    `<div class="slide">
+      <div class="slide-header"><h2>Our Reach</h2><span class="slide-badge">Geography</span></div>
+      <div class="slide-body">
+        <div class="slide-kpi-row" style="margin-bottom:.75rem">
+          <div class="slide-kpi"><div class="val" id="stat-median">&mdash;</div><div class="lbl">Median Distance</div></div>
+          <div class="slide-kpi"><div class="val" id="stat-min">&mdash;</div><div class="lbl">Closest</div></div>
+          <div class="slide-kpi"><div class="val" id="stat-max">&mdash;</div><div class="lbl">Furthest</div></div>
+        </div>
+        <div id="slide-map"></div>
+        <p style="font-size:.65rem;color:var(--grey-deep);margin-top:.25rem;text-align:right;flex-shrink:0">Distances measured from Grace Toronto (383 Jarvis St) &middot; Zoom in to see individual areas</p>
+      </div>
+    </div>`,
+
+    // 4 - Where Are the Singles At?
+    (() => {
+      const singles = DATA.records.filter(r => r.marital_status === 'Single' || r.marital_status === 'Divorced');
+      const sN = singles.length;
+      const sPct = Math.round(sN / maritalResponded * 100);
+      const sF = singles.filter(r => r.gender === 'Female').length;
+      const sM = singles.filter(r => r.gender === 'Male').length;
+      const sFPct = Math.round(sF / sN * 100);
+      const sMPct = Math.round(sM / sN * 100);
+
+      const svcCounts = {};
+      singles.forEach(r => { if (r.service && r.service !== 'Livestream') svcCounts[r.service] = (svcCounts[r.service] || 0) + 1; });
+      const svcEntries = Object.entries(svcCounts).sort((a, b) => b[1] - a[1]);
+
+      const svcGender = {};
+      singles.forEach(r => {
+        if (!r.service || !r.gender) return;
+        if (!svcGender[r.service]) svcGender[r.service] = { Female: 0, Male: 0 };
+        svcGender[r.service][r.gender]++;
+      });
+
+      const genderExclude = new Set(["Men's Ministry", "Women's Ministry"]);
+      const minByGender = {};
+      singles.forEach(r => {
+        (r.ministries_participated || []).forEach(m => {
+          if (!genderExclude.has(m)) {
+            if (!minByGender[m]) minByGender[m] = { Female: 0, Male: 0, total: 0 };
+            minByGender[m].total++;
+            if (r.gender === 'Female') minByGender[m].Female++;
+            if (r.gender === 'Male') minByGender[m].Male++;
+          }
+        });
+      });
+      const topSingleMin = Object.entries(minByGender).sort((a, b) => b[1].total - a[1].total).slice(0, 8);
+
+      const svcBar = (svc, count) => {
+        const g = svcGender[svc] || { Female: 0, Male: 0 };
+        const fPct = count ? Math.round(g.Female / count * 100) : 0;
+        const mPct = count ? Math.round(g.Male / count * 100) : 0;
+        return `<div style="background:var(--grey-light);border-radius:8px;padding:.5rem .7rem;margin-bottom:.4rem">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.3rem">
+            <span style="font-size:.78rem;font-weight:600;color:var(--dark)">${svc}</span>
+            <span style="font-family:'Erode',serif;font-size:1.1rem;font-weight:700">${Math.round(count/sN*100)}%</span>
+          </div>
+          <div style="display:flex;height:10px;border-radius:5px;overflow:hidden">
+            <div style="width:${fPct}%;background:#2b7a78" title="${fPct}% Female"></div>
+            <div style="width:${mPct}%;background:#d4a843" title="${mPct}% Male"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:.15rem">
+            <span style="font-size:.55rem;color:#2b7a78;font-weight:600">${fPct}% Female</span>
+            <span style="font-size:.55rem;color:#d4a843;font-weight:600">${mPct}% Male</span>
+          </div>
+        </div>`;
+      };
+
+      return `<div class="slide">
+      <div class="slide-header"><h2>Where Are the Singles At?</h2><span class="slide-badge">Community</span></div>
+      <div class="slide-body">
+        <div class="slide-kpi-row">
+          <div class="slide-kpi"><div class="val">${sPct}%</div><div class="lbl">of respondents are single</div></div>
+          <div class="slide-kpi"><div class="val">${sN}</div><div class="lbl">single respondents</div></div>
+          <div class="slide-kpi"><div class="val" style="color:#2b7a78">${sFPct}%</div><div class="lbl">Female</div></div>
+          <div class="slide-kpi"><div class="val" style="color:#d4a843">${sMPct}%</div><div class="lbl">Male</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 0px 1fr;gap:0 1.5rem;flex:1;min-height:0">
+          <div style="display:flex;flex-direction:column;gap:0">
+            <h3>\u26EA Service Attendance</h3>
+            <p style="font-size:.65rem;color:var(--grey-dark);margin-bottom:.4rem">Which services do singles attend, and what is the gender split?</p>
+            ${svcEntries.map(([k, v]) => svcBar(k, v)).join('')}
+          </div>
+          <div style="background:#e0e0e0;width:1px;justify-self:center"></div>
+          <div style="display:flex;flex-direction:column;gap:0">
+            <h3>\u{1F91D} Ministry Participation by Gender</h3>
+            <p style="font-size:.65rem;color:var(--grey-dark);margin-bottom:.4rem">Where are single men and women serving? (% of single F / M)</p>
+            <table style="width:100%;border-collapse:collapse;font-size:.68rem">
+              <thead><tr style="border-bottom:2px solid #e0e0e0">
+                <th style="text-align:left;padding:.25rem .2rem;font-weight:600;color:var(--grey-dark)">Ministry</th>
+                <th style="text-align:center;padding:.25rem .2rem;font-weight:600;color:#2b7a78;width:55px">Female</th>
+                <th style="text-align:center;padding:.25rem .2rem;font-weight:600;color:#d4a843;width:55px">Male</th>
+              </tr></thead>
+              <tbody>${topSingleMin.map(([k, g]) => '<tr style="border-bottom:1px solid #f0f0f0"><td style="padding:.25rem .2rem">' + k + '</td><td style="text-align:center;padding:.25rem .2rem;color:#2b7a78;font-weight:600">' + (sF ? Math.round(g.Female/sF*100) : 0) + '%</td><td style="text-align:center;padding:.25rem .2rem;color:#d4a843;font-weight:600">' + (sM ? Math.round(g.Male/sM*100) : 0) + '%</td></tr>').join('')}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>`;
+    })(),
+  ];
+
+  const viewport = document.getElementById('slide-viewport');
+  viewport.innerHTML = slides.join('');
+
+  const dotsEl = document.getElementById('slide-dots');
+  dotsEl.innerHTML = slides.map((_, i) => `<button class="dot${i === 0 ? ' active' : ''}" data-slide="${i}"></button>`).join('');
+
+  renderSlideCharts();
+  goToSlide(0);
+}
+
+function renderSlideCharts() {
+  const s = DATA.summary, n = DATA.metadata.total_responses, na = s.numeric_averages;
+  slideCharts.forEach(c => c.destroy());
+  slideCharts.length = 0;
+
+  const miniOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, datalabels: { display: false },
+      tooltip: { backgroundColor: '#1c1c1c', titleFont: { family: 'Switzer' }, bodyFont: { family: 'Switzer' }, cornerRadius: 6, padding: 8 }},
+  };
+
+}
+
+const CHURCH_COORDS = [43.6618, -79.3753]; // 383 Jarvis St
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function renderSlideMap() {
+  if (slideMap) return;
+  const mapEl = document.getElementById('slide-map');
+  if (!mapEl || mapEl.offsetHeight === 0) return;
+
+  slideMap = L.map('slide-map', { zoomControl: true, attributionControl: false }).setView(CHURCH_COORDS, 12);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    maxZoom: 17,
+    attribution: '\u00a9 OpenStreetMap \u00a9 CARTO',
+  }).addTo(slideMap);
+
+  const postalCounts = {};
+  DATA.records.forEach(r => {
+    const p = r.postal_prefix;
+    if (p) postalCounts[p] = (postalCounts[p] || 0) + 1;
+  });
+
+  const clusters = L.markerClusterGroup({
+    maxClusterRadius: 45,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    iconCreateFunction: cluster => {
+      const count = cluster.getChildCount();
+      let cls = 'cluster-sm', size = 32;
+      if (count >= 20) { cls = 'cluster-lg'; size = 50; }
+      else if (count >= 8) { cls = 'cluster-md'; size = 40; }
+      return L.divIcon({ html: `<div class="cluster-icon ${cls}">${count}</div>`, className: '', iconSize: [size, size] });
+    },
+  });
+
+  const distances = [];
+  const allCoords = [CHURCH_COORDS];
+  Object.entries(postalCounts).forEach(([prefix, count]) => {
+    const coords = POSTAL_COORDS[prefix];
+    if (!coords) return;
+    const km = haversineKm(CHURCH_COORDS[0], CHURCH_COORDS[1], coords[0], coords[1]);
+    for (let i = 0; i < count; i++) {
+      distances.push(km);
+      const jLat = coords[0] + (Math.random() - 0.5) * 0.005;
+      const jLng = coords[1] + (Math.random() - 0.5) * 0.005;
+      const marker = L.marker([jLat, jLng], {
+        icon: L.divIcon({ html: '<div style="background:#2b7a78;width:10px;height:10px;border-radius:50%;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>', className: '', iconSize: [10, 10], iconAnchor: [5, 5] }),
+      });
+      marker.bindPopup(`<strong>${prefix}</strong><br>${count} respondent${count>1?'s':''}<br>${km.toFixed(1)} km from church`);
+      clusters.addLayer(marker);
+    }
+    allCoords.push(coords);
+  });
+
+  slideMap.addLayer(clusters);
+
+  const churchIcon = L.divIcon({
+    html: '<div style="background:var(--brand);width:16px;height:16px;border-radius:50%;border:3px solid #1c1c1c;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div>',
+    className: '', iconSize: [16, 16], iconAnchor: [8, 8],
+  });
+  L.marker(CHURCH_COORDS, { icon: churchIcon, zIndexOffset: 1000 })
+    .addTo(slideMap)
+    .bindPopup('<strong>Grace Toronto Church</strong><br>383 Jarvis St')
+    .bindTooltip('Grace Toronto', { permanent: true, direction: 'right', offset: [12, 0], className: 'church-label' });
+
+  // Fit bounds to show ~90th percentile of respondents (excludes far outliers)
+  distances.sort((a, b) => a - b);
+  if (distances.length) {
+    const p90 = distances[Math.floor(distances.length * 0.90)];
+    const relevantCoords = allCoords.filter(c =>
+      haversineKm(CHURCH_COORDS[0], CHURCH_COORDS[1], c[0], c[1]) <= p90 * 1.15
+    );
+    if (relevantCoords.length > 1) {
+      slideMap.fitBounds(L.latLngBounds(relevantCoords).pad(0.08));
+    }
+  }
+
+  const median = distances.length ? distances[Math.floor(distances.length / 2)] : 0;
+  const minD = distances.length ? distances[0] : 0;
+  const maxD = distances.length ? distances[distances.length - 1] : 0;
+  const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setEl('stat-median', `~${median.toFixed(1)} km`);
+  setEl('stat-min', `~${minD.toFixed(1)} km`);
+  setEl('stat-max', `~${maxD.toFixed(1)} km`);
+}
+
+function goToSlide(idx) {
+  const allSlides = document.querySelectorAll('#slide-viewport .slide');
+  const allDots = document.querySelectorAll('#slide-dots .dot');
+  if (idx < 0 || idx >= allSlides.length) return;
+  slideIdx = idx;
+  allSlides.forEach((s, i) => s.classList.toggle('active', i === idx));
+  allDots.forEach((d, i) => d.classList.toggle('active', i === idx));
+  document.getElementById('slide-prev').disabled = idx === 0;
+  document.getElementById('slide-next').disabled = idx === allSlides.length - 1;
+
+  if (idx === 3) setTimeout(() => { renderSlideMap(); slideMap?.invalidateSize(); }, 100);
+}
+
+function initSlideNav() {
+  document.getElementById('slide-prev').addEventListener('click', () => goToSlide(slideIdx - 1));
+  document.getElementById('slide-next').addEventListener('click', () => goToSlide(slideIdx + 1));
+  document.getElementById('slide-dots').addEventListener('click', e => {
+    if (e.target.dataset.slide != null) goToSlide(parseInt(e.target.dataset.slide));
+  });
+
+  document.addEventListener('keydown', e => {
+    if (document.getElementById('sec-slides')?.classList.contains('active')) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); goToSlide(slideIdx + 1); }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); goToSlide(slideIdx - 1); }
+    }
+  });
+
+  document.getElementById('slide-export').addEventListener('click', async () => {
+    const btn = document.getElementById('slide-export');
+    btn.textContent = 'Generating...';
+    btn.disabled = true;
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [960, 540] });
+    const viewport = document.getElementById('slide-viewport');
+    const allSlides = viewport.querySelectorAll('.slide');
+    const origIdx = slideIdx;
+
+    for (let i = 0; i < allSlides.length; i++) {
+      goToSlide(i);
+      await new Promise(r => setTimeout(r, 400));
+      if (i === 7 && slideMap) { slideMap.invalidateSize(); await new Promise(r => setTimeout(r, 600)); }
+      const canvas = await html2canvas(viewport, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' });
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      if (i > 0) pdf.addPage([960, 540], 'landscape');
+      pdf.addImage(imgData, 'JPEG', 0, 0, 960, 540);
+    }
+    goToSlide(origIdx);
+    pdf.save('GTC_2025_Survey_Summary.pdf');
+    btn.textContent = 'Export PDF';
+    btn.disabled = false;
+  });
+}
+
+function renderSlides() {
+  buildSlides();
+  initSlideNav();
+}
+
 let chartsRendered={};
 function switchSection(id){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -1090,7 +1727,7 @@ function switchSection(id){
   document.getElementById('sec-'+id).classList.add('active');
   document.querySelector(`[data-section="${id}"]`).classList.add('active');
   if(!chartsRendered[id]){chartsRendered[id]=true;
-    ({overview:()=>{renderKPIs();renderInsights();renderOverview()},demographics:renderDemographics,
+    ({overview:()=>{renderKPIs();renderInsights();renderOverview()},slides:renderSlides,demographics:renderDemographics,
       engagement:renderEngagement,programs:renderPrograms,satisfaction:renderSatisfaction,
       operations:renderOperations,explore:()=>{populateFilters();renderTable()}})[id]?.();
   }

@@ -1488,11 +1488,12 @@ function buildSlides() {
       return `<div class="slide">
       <div class="slide-header"><h2>Families at GTC</h2><span class="slide-badge">Geography</span></div>
       <div class="slide-body">
-        <div class="slide-kpi-row" style="margin-bottom:.5rem">
-          <div class="slide-kpi"><div class="val">${famN}</div><div class="lbl">Children at church (respondents)</div></div>
-          <div class="slide-kpi"><div class="val">${famPostal}</div><div class="lbl">With postal on map</div></div>
-          <div class="slide-kpi"><div class="val">${famPct}%</div><div class="lbl">Of full survey</div></div>
+        <div class="slide-kpi-row" style="margin-bottom:.35rem">
+          <div class="slide-kpi"><div class="val">${famN}</div><div class="lbl">Survey adults reporting kids at GTC</div></div>
+          <div class="slide-kpi"><div class="val">${famPostal}</div><div class="lbl">Those respondents with postal area</div></div>
+          <div class="slide-kpi"><div class="val">${famPct}%</div><div class="lbl">% of all survey responses</div></div>
         </div>
+        <p style="font-size:.62rem;color:var(--grey-dark);margin:0 0 .5rem;line-height:1.35">This count is <strong>responding adults</strong>, not the number of children. Each survey submission is one respondent.</p>
         <div class="slide-kpi-row" style="margin-bottom:.75rem">
           <div class="slide-kpi"><div class="val" id="stat-families-median">&mdash;</div><div class="lbl">Median Distance</div></div>
           <div class="slide-kpi"><div class="val" id="stat-families-min">&mdash;</div><div class="lbl">Closest</div></div>
